@@ -1,6 +1,6 @@
 {
   "version": "mandate/v0",
-  "id": "mandate://b3:abcdefghijklmnopqrstuvwxyz234567abcdefghijklmnopqrst",
+  "id": "mandate://b3:tqmvcvw2d3ov7rzvsu7q2yo4jyoil3znsjgaxiabujgpvrlxdqyq",
   "buyer": {
     "wallet": "eip155:8453:0xAbC0000000000000000000000000000000000001",
     "sig": {
