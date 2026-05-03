@@ -1,0 +1,183 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://mandate-spec.org/v0/mandate.schema.json",
+  "title": "Mandate v0",
+  "description": "A signed, attested purchasing mandate that travels from a buyer's agent to a merchant.",
+  "type": "object",
+  "required": ["version", "id", "buyer", "intent", "budget", "agent", "lifecycle"],
+  "additionalProperties": false,
+  "properties": {
+    "version": { "const": "mandate/v0" },
+    "id": {
+      "type": "string",
+      "pattern": "^mandate://b3:[a-z2-7]{52}$",
+      "description": "Content hash of the canonical body, base32-blake3 (RFC 4648 lowercase, no padding)."
+    },
+    "buyer": {
+      "type": "object",
+      "required": ["wallet", "sig"],
+      "additionalProperties": false,
+      "properties": {
+        "wallet": {
+          "type": "string",
+          "description": "CAIP-10 chain-agnostic address, e.g. eip155:8453:0x...",
+          "pattern": "^[a-z0-9-]+:[A-Za-z0-9-]+:.+$"
+        },
+        "sig": { "$ref": "#/$defs/Signature" }
+      }
+    },
+    "intent": {
+      "type": "object",
+      "required": ["brief"],
+      "additionalProperties": false,
+      "properties": {
+        "brief": { "type": "string", "minLength": 1 },
+        "structured": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "category": { "type": "string" },
+            "must":   { "type": "object" },
+            "prefer": { "type": "object" },
+            "avoid":  { "type": "object" }
+          }
+        }
+      }
+    },
+    "budget": {
+      "type": "object",
+      "required": ["max_total", "settlement_rails"],
+      "additionalProperties": false,
+      "properties": {
+        "max_total": { "$ref": "#/$defs/Money" },
+        "settlement_rails": {
+          "type": "array",
+          "items": { "type": "string" },
+          "minItems": 1,
+          "uniqueItems": true
+        },
+        "fees_inclusive": { "type": "boolean", "default": true },
+        "tip_policy": { "enum": ["none", "merchant_default", "ask"] }
+      }
+    },
+    "preferences": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "vault_pointer": { "type": "string" },
+        "vault_grant": {
+          "type": "object",
+          "required": ["type", "value"],
+          "additionalProperties": false,
+          "properties": {
+            "type": { "type": "string", "examples": ["ucan/v0.10"] },
+            "value": { "type": "string" }
+          }
+        }
+      }
+    },
+    "policies": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "fulfillment_by": { "type": "string", "format": "date-time" },
+        "return_window_days_min": { "type": "integer", "minimum": 0 },
+        "substitutions": { "enum": ["ok", "no", "ask"] },
+        "shipping_destinations": {
+          "type": "array",
+          "items": { "type": "string", "minLength": 2, "maxLength": 2 }
+        },
+        "data_sharing": { "enum": ["minimum_necessary", "full"] }
+      }
+    },
+    "agent": {
+      "type": "object",
+      "required": ["runtime_id", "attestation"],
+      "additionalProperties": false,
+      "properties": {
+        "runtime_id": { "type": "string" },
+        "attestation": {
+          "type": "object",
+          "required": ["type", "report", "report_data_binding"],
+          "additionalProperties": false,
+          "properties": {
+            "type": { "enum": ["amd-sev-snp"] },
+            "vcek_chain": { "type": "string", "description": "base64-encoded VCEK chain" },
+            "report": { "type": "string", "description": "base64-encoded SNP attestation report" },
+            "report_data_binding": {
+              "const": "blake3(canonical_body)[0..64]",
+              "description": "Declares how REPORT_DATA was derived. Verifier recomputes blake3 over canonical body and compares first 64 bytes against report.REPORT_DATA."
+            }
+          }
+        }
+      }
+    },
+    "approval": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "human_required_above": { "$ref": "#/$defs/Money" },
+        "approval_sig": {
+          "oneOf": [
+            { "type": "null" },
+            { "$ref": "#/$defs/Signature" }
+          ]
+        }
+      }
+    },
+    "lifecycle": {
+      "type": "object",
+      "required": ["created_at", "expires_at", "nonce", "state"],
+      "additionalProperties": false,
+      "properties": {
+        "created_at": { "type": "string", "format": "date-time" },
+        "expires_at": { "type": "string", "format": "date-time" },
+        "nonce": { "type": "string", "minLength": 8 },
+        "bound_to_merchant": {
+          "oneOf": [
+            { "type": "null" },
+            { "type": "string", "description": "merchant DID, set on first accepted quote" }
+          ]
+        },
+        "state": {
+          "enum": [
+            "minted",
+            "presented",
+            "quoted",
+            "approved",
+            "fulfilling",
+            "settled",
+            "closed",
+            "expired",
+            "rejected",
+            "refunded"
+          ]
+        }
+      }
+    }
+  },
+  "$defs": {
+    "Money": {
+      "type": "object",
+      "required": ["amount", "currency"],
+      "additionalProperties": false,
+      "properties": {
+        "amount": {
+          "type": "string",
+          "pattern": "^[0-9]+$",
+          "description": "Integer string in the smallest unit of `currency` (e.g. USD-cents)."
+        },
+        "currency": { "type": "string", "examples": ["USD-cents", "USDC", "EUR-cents"] }
+      }
+    },
+    "Signature": {
+      "type": "object",
+      "required": ["alg", "value"],
+      "additionalProperties": false,
+      "properties": {
+        "alg": { "enum": ["eip191", "ed25519-solana"] },
+        "value": { "type": "string" }
+      }
+    }
+  }
+}

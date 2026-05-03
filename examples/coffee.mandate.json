@@ -1,0 +1,70 @@
+{
+  "version": "mandate/v0",
+  "id": "mandate://b3:abcdefghijklmnopqrstuvwxyz234567abcdefghijklmnopqrst",
+  "buyer": {
+    "wallet": "eip155:8453:0xAbC0000000000000000000000000000000000001",
+    "sig": {
+      "alg": "eip191",
+      "value": "0xPLACEHOLDER_SIGNATURE_64_BYTES_HEX"
+    }
+  },
+  "intent": {
+    "brief": "Authentic Ethiopian honey-process coffee, recent roast, whole bean",
+    "structured": {
+      "category": "consumable.coffee.beans",
+      "must": {
+        "origin": ["ET"],
+        "process": ["honey", "natural"],
+        "form": "whole_bean"
+      },
+      "prefer": {
+        "roast_age_days_max": 14,
+        "weight_g_min": 250,
+        "roaster_allowlist": ["49thparallel", "heart", "sey"]
+      },
+      "avoid": {
+        "roaster_blocklist": []
+      }
+    }
+  },
+  "budget": {
+    "max_total": { "amount": "4000", "currency": "USD-cents" },
+    "settlement_rails": ["x402+usdc-base", "stripe-card", "stripe-bridge-usdc"],
+    "fees_inclusive": true,
+    "tip_policy": "none"
+  },
+  "preferences": {
+    "vault_pointer": "ipfs://QmExamplePreferencesCidForCoffeeProfile00000000000000",
+    "vault_grant": {
+      "type": "ucan/v0.10",
+      "value": "eyJhbGciOi.PLACEHOLDER_UCAN_SCOPED_TO_MANDATE_AND_MERCHANT"
+    }
+  },
+  "policies": {
+    "fulfillment_by": "2026-05-15T00:00:00Z",
+    "return_window_days_min": 14,
+    "substitutions": "ask",
+    "shipping_destinations": ["US", "CA"],
+    "data_sharing": "minimum_necessary"
+  },
+  "agent": {
+    "runtime_id": "did:1bit:agent:strix-halo-01",
+    "attestation": {
+      "type": "amd-sev-snp",
+      "vcek_chain": "BASE64_PLACEHOLDER_VCEK_CHAIN",
+      "report": "BASE64_PLACEHOLDER_SNP_REPORT_WITH_REPORT_DATA_BOUND_TO_MANDATE",
+      "report_data_binding": "blake3(canonical_body)[0..64]"
+    }
+  },
+  "approval": {
+    "human_required_above": { "amount": "2000", "currency": "USD-cents" },
+    "approval_sig": null
+  },
+  "lifecycle": {
+    "created_at": "2026-05-03T16:00:00Z",
+    "expires_at": "2026-05-10T16:00:00Z",
+    "nonce": "0xdeadbeefcafef00d",
+    "bound_to_merchant": null,
+    "state": "minted"
+  }
+}
