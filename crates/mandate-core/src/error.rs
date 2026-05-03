@@ -17,6 +17,12 @@ pub enum Error {
     #[error("canonicalization error: {0}")]
     Canonical(String),
 
+    #[error("crypto error: {0}")]
+    Crypto(String),
+
+    #[error("invalid hex: {0}")]
+    Hex(#[from] hex::FromHexError),
+
     #[error(transparent)]
     Json(#[from] serde_json::Error),
 }

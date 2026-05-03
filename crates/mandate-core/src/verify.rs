@@ -1,14 +1,30 @@
 //! Verification helpers — the merchant side of the wire.
 //!
-//! Verifies (1) the buyer wallet signature over the canonical body,
-//! (2) optional approval signature, and (3) the agent attestation
-//! report against the canonical body hash.
+//! `verify_mandate` performs the two checks every merchant must run before
+//! accepting a mandate: (1) recompute the content-addressed `id` from the
+//! canonical body and ensure it matches what's stored, and (2) verify the
+//! buyer signature recovers to the wallet declared in `buyer.wallet`.
 //!
-//! TODO(v0.0.1): wire to `sign` + `attest` + `canonical`.
+//! Attestation verification (SEV-SNP report + VCEK chain) is in `attest`.
 
+use crate::canonical::{canonical_body, mandate_id_for};
 use crate::error::Error;
+use crate::eth;
 use crate::types::Mandate;
 
-pub fn verify_mandate(_m: &Mandate) -> Result<(), Error> {
-    Err(Error::NotImplemented("verify_mandate"))
+/// Verify a mandate end-to-end (excluding attestation).
+pub fn verify_mandate(m: &Mandate) -> Result<(), Error> {
+    let computed_id = mandate_id_for(m)?;
+    if computed_id != m.id {
+        return Err(Error::Schema(format!(
+            "mandate id mismatch: stored={}, computed={}",
+            m.id, computed_id
+        )));
+    }
+    let body = canonical_body(m)?;
+    match m.buyer.sig.alg.as_str() {
+        "eip191" => eth::verify_personal(&body, &m.buyer.sig.value, &m.buyer.wallet),
+        "ed25519-solana" => Err(Error::NotImplemented("ed25519-solana verify")),
+        other => Err(Error::Schema(format!("unknown buyer.sig.alg: {other}"))),
+    }
 }
