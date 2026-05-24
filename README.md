@@ -1,5 +1,8 @@
 # mandate-spec
 
+**→ [Project Wiki](docs/wiki/README.md)** — architecture, decisions, gotchas, and agent onboarding.
+
+
 Open spec for **Mandate v0** — a signed, attested purchasing mandate that travels from a buyer's agent into any merchant.
 
 A mandate is the **buyer-side primitive** that complements merchant-side agentic-commerce stacks (Stripe Link Wallet, Visa Trusted Agent, Mastercard Agent Pay, Google ACP, OpenAI Instant Checkout). It carries the buyer's wallet identity, structured intent, budget cap, settlement-rail preferences, and an SEV-SNP attestation of the agent runtime that minted it — so any merchant can verify and quote it without a prior relationship to the buyer or their agent.
