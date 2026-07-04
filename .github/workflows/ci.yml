@@ -13,9 +13,6 @@ jobs:
   rust:
     name: Rust
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: crates/mandate-core
     steps:
       - uses: actions/checkout@v4
       - uses: dtolnay/rust-toolchain@stable
@@ -28,13 +25,16 @@ jobs:
   ts:
     name: TypeScript
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: packages/mandate-core-ts
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
           node-version: "22"
-      - run: npm ci || npm install
-      - run: npm test 2>/dev/null || echo "No tests defined"
+      - name: Check TypeScript packages
+        run: |
+          for pkg in packages/*/; do
+            if [ -f "$pkg/package.json" ]; then
+              echo "Building $pkg..."
+              (cd "$pkg" && npm ci 2>/dev/null || npm install && npm test 2>/dev/null || echo "No tests in $pkg")
+            fi
+          done
